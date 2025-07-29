@@ -1,5 +1,5 @@
 /** @type {import('jest').Config} */
-export default {
+module.exports = {
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/tests/setup/jest.setup.js'],
   testMatch: [
