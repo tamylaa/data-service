@@ -2,9 +2,9 @@ name: Deploy to Cloudflare Workers
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
@@ -12,69 +12,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Cache npm dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
         run: |
-          # Install all dependencies including uuid
-          npm install uuid@9.0.1
+          # Clean npm cache to avoid conflicts
+          npm cache clean --force
+          # Install dependencies (cleaned package.json without problematic SQLite packages)
           npm install
+        env:
+          # Skip optional dependencies that might cause native compilation issues
+          npm_config_optional: false
 
-      - name: Install esbuild globally
-        run: npm install -g esbuild
-
-      - name: Build project
-        run: |
-          # Ensure all dependencies are installed
-          npm install
-          # Build with proper ESM configuration
-          esbuild api/server.js --bundle --platform=node --target=node18 --outdir=dist --format=esm
-        if: ${{ github.event_name == 'push' }}
-
-      - name: Check build output
-        run: |
-          if [ ! -f "dist/server.js" ]; then
-            echo "Build output not found"
-            exit 1
-          fi
-
-      - name: Verify ESM build
-        run: |
-          if ! grep -q 'export' dist/server.js; then
-            echo "Build output is not in ESM format"
-            exit 1
-          fi
+      - name: Run tests
+        run: npm test
+        env:
+          NODE_ENV: test
 
       - name: Deploy with Cloudflare Wrangler
-        uses: cloudflare/wrangler-action@v3.0
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          name: mongodb-worker
-          env: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+          command: deploy --env ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
         env:
           NODE_ENV: production
         if: ${{ github.event_name == 'push' }}
 
       - name: Deploy preview on pull request
         if: ${{ github.event_name == 'pull_request' }}
-        uses: cloudflare/wrangler-action@v3.0
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          name: mongodb-worker
-          env: staging
+          command: deploy --env staging

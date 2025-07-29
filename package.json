@@ -35,7 +35,6 @@
   "license": "MIT",
   "dependencies": {
     "@cloudflare/workers-types": "^4.20240208.0",
-    "@databases/sqlite": "^4.0.2",
     "axios": "^1.10.0",
     "dotenv": "^17.2.0",
     "execa": "^5.1.1",
@@ -48,23 +47,16 @@
   "devDependencies": {
     "@babel/core": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
-    "@cloudflare/d1": "^1.4.1",
-    "@databases/sqlite": "^4.0.2",
     "@iarna/toml": "^2.2.5",
-    "@miniflare/d1": "^2.14.4",
     "@types/jest": "^30.0.0",
     "babel-jest": "^30.0.5",
-    "better-sqlite3": "^12.2.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "jest": "^30.0.5",
     "jest-circus": "^30.0.5",
     "jest-environment-node": "^30.0.5",
     "prettier": "^3.2.4",
-    "sql.js": "^1.13.0",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
-    "wrangler": "^4.25.0"
+    "wrangler": "^3.78.12"
   },
   "engines": {
     "node": ">=18.0.0"
