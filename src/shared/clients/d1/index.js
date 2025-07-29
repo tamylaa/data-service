@@ -367,15 +367,21 @@ export class D1Client {
     if (globalObj.process?.env?.TEST_DB_MANAGER === 'true' || env.TEST_DB_MANAGER === 'true') {
       // Import the test database manager dynamically to avoid circular dependencies
       import('../../../../tests/setup/testDb/TestDbManager.js')
-        .then(({ testDbManager }) => {
-          this.db = testDbManager.getDb();
-          this._isInitialized = true;
-          console.log('Using test database manager instance');
-          this._initializeClients();
+        .then((module) => {
+          const testDbManager = module.testDbManager || module.default;
+          if (testDbManager && typeof testDbManager.getDb === 'function') {
+            this.db = testDbManager.getDb();
+            this._isInitialized = true;
+            console.log('Using test database manager instance');
+            this._initializeClients();
+          } else {
+            console.warn('TestDbManager not available, falling back to D1TestWrapper');
+            this._createNewTestDatabase();
+          }
         })
         .catch(error => {
           console.error('Failed to initialize test database manager:', error);
-          throw error;
+          this._createNewTestDatabase();
         });
       return;
     }
@@ -408,7 +414,13 @@ export class D1Client {
     try {
       const testDbConfig = JSON.parse(env.TEST_DB_INSTANCE);
       if (testDbConfig.type === 'D1TestWrapper') {
-        const { D1TestWrapper } = await import('../../../../tests/setup/testDb/D1TestWrapper.js');
+        const module = await import('../../../../tests/setup/testDb/D1TestWrapper.js');
+        const D1TestWrapper = module.D1TestWrapper || module.default;
+        
+        if (!D1TestWrapper) {
+          throw new Error('D1TestWrapper not found in module exports');
+        }
+        
         this.db = new D1TestWrapper();
         this._isInitialized = true;
         console.log('Using D1TestWrapper instance from environment');
@@ -427,7 +439,13 @@ export class D1Client {
    */
   async _createNewTestDatabase() {
     try {
-      const { D1TestWrapper } = await import('../../../../tests/setup/testDb/D1TestWrapper.js');
+      const module = await import('../../../../tests/setup/testDb/D1TestWrapper.js');
+      const D1TestWrapper = module.D1TestWrapper || module.default;
+      
+      if (!D1TestWrapper) {
+        throw new Error('D1TestWrapper not found in module exports');
+      }
+      
       this.db = new D1TestWrapper();
       this._isInitialized = true;
       console.log('Created new test database instance');

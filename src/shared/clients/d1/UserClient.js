@@ -46,7 +46,7 @@ export class UserClient {
         updated_at: now
       };
       
-      await this.run(
+      await this.d1Client.run(
         'INSERT INTO users (id, email, name, is_email_verified, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
         [id, normalizedEmail, user.name, 0, now, now]
       );
@@ -225,6 +225,7 @@ export class UserClient {
       email: dbUser.email,
       name: dbUser.name,
       is_email_verified: dbUser.is_email_verified === 1,
+      isEmailVerified: dbUser.is_email_verified === 1, // camelCase for frontend
       createdAt: dbUser.created_at,
       updatedAt: dbUser.updated_at
     };

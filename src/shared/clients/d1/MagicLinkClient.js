@@ -64,7 +64,7 @@ export class MagicLinkClient {
         magicLink.updated_at
       ]);
       
-      await this.run(
+      await this.d1Client.run(
         `INSERT INTO magic_links (
           id, user_id, token, email, name, 
           is_used, expires_at, created_at, updated_at
@@ -114,12 +114,12 @@ export class MagicLinkClient {
       console.log(`[MagicLinkClient] Executing query: ${query} with params:`, params);
       
       // Get the magic link first
-      const magicLink = await this.first(query, params);
+      const magicLink = await this.d1Client.first(query, params);
       
       if (!magicLink) {
         console.log(`[MagicLinkClient] No magic link found in database with token: ${token}`);
         // Let's check if there are any magic links in the database at all
-        const allLinks = await this.all('SELECT token, user_id, expires_at, is_used FROM magic_links LIMIT 5');
+        const allLinks = await this.d1Client.all('SELECT token, user_id, expires_at, is_used FROM magic_links LIMIT 5');
         console.log(`[MagicLinkClient] First 5 magic links in database:`, allLinks);
         return null;
       }
@@ -188,7 +188,7 @@ export class MagicLinkClient {
       
       query += ' ORDER BY created_at DESC';
       
-      const magicLinks = await this.all(query, params);
+      const magicLinks = await this.d1Client.all(query, params);
       console.log(`[MagicLinkClient] Found ${magicLinks.length} magic links for user: ${userId}`);
       
       return magicLinks.map(link => this.mapMagicLink(link));
@@ -210,7 +210,7 @@ export class MagicLinkClient {
     
     try {
       const now = new Date().toISOString();
-      const magicLink = await this.first(
+      const magicLink = await this.d1Client.first(
         `SELECT * FROM magic_links 
          WHERE user_id = ? AND is_used = 0 AND expires_at > ? 
          ORDER BY created_at DESC LIMIT 1`,
@@ -242,7 +242,7 @@ export class MagicLinkClient {
     
     try {
       const now = new Date().toISOString();
-      const result = await this.run(
+      const result = await this.d1Client.run(
         'UPDATE magic_links SET is_used = 1, updated_at = ? WHERE token = ? AND is_used = 0',
         [now, token]
       );
@@ -266,7 +266,7 @@ export class MagicLinkClient {
     
     try {
       const now = new Date().toISOString();
-      const result = await this.first(
+      const result = await this.d1Client.first(
         'SELECT 1 as valid FROM magic_links WHERE token = ? AND is_used = 0 AND expires_at > ?',
         [token, now]
       );
@@ -285,7 +285,7 @@ export class MagicLinkClient {
   async deleteExpired() {
     try {
       const now = new Date().toISOString();
-      const result = await this.run(
+      const result = await this.d1Client.run(
         'DELETE FROM magic_links WHERE expires_at <= ?',
         [now]
       );
@@ -310,7 +310,7 @@ export class MagicLinkClient {
     console.log(`[MagicLinkClient] Deleting magic link with token: ${token}`);
     
     try {
-      const result = await this.run(
+      const result = await this.d1Client.run(
         'DELETE FROM magic_links WHERE token = ?',
         [token]
       );

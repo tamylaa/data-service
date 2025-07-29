@@ -52,7 +52,7 @@ export class TokenClient {
     };
     
     try {
-      await this.run(
+      await this.d1Client.run(
         `INSERT INTO tokens (id, user_id, type, token, is_revoked, expires_at, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
@@ -86,7 +86,7 @@ export class TokenClient {
     console.log(`[TokenClient] Finding token`);
     
     try {
-      const tokenData = await this.first(
+      const tokenData = await this.d1Client.first(
         'SELECT * FROM tokens WHERE token = ?',
         [token]
       );
@@ -116,7 +116,7 @@ export class TokenClient {
     
     try {
       const now = new Date().toISOString();
-      const result = await this.run(
+      const result = await this.d1Client.run(
         'UPDATE tokens SET is_revoked = 1, updated_at = ? WHERE token = ? AND is_revoked = 0',
         [now, token]
       );
@@ -151,7 +151,7 @@ export class TokenClient {
         params.push(type);
       }
       
-      const result = await this.run(query, params);
+      const result = await this.d1Client.run(query, params);
       const count = result.meta.changes;
       
       console.log(`[TokenClient] Revoked ${count} tokens`);
@@ -183,7 +183,7 @@ export class TokenClient {
         params.push(type);
       }
       
-      const result = await this.first(query, params);
+      const result = await this.d1Client.first(query, params);
       const isValid = !!result?.valid;
       
       console.log(`[TokenClient] Token validation ${isValid ? 'succeeded' : 'failed'}`);
@@ -221,7 +221,7 @@ export class TokenClient {
         params.push(type);
       }
       
-      const tokens = await this.all(query, params);
+      const tokens = await this.d1Client.all(query, params);
       console.log(`[TokenClient] Found ${tokens.length} tokens`);
       
       return tokens.map(token => this.mapToken(token));
@@ -238,7 +238,7 @@ export class TokenClient {
   async deleteExpired() {
     try {
       const now = new Date().toISOString();
-      const result = await this.run(
+      const result = await this.d1Client.run(
         'DELETE FROM tokens WHERE expires_at <= ?',
         [now]
       );
@@ -263,7 +263,7 @@ export class TokenClient {
     console.log(`[TokenClient] Deleting token`);
     
     try {
-      const result = await this.run(
+      const result = await this.d1Client.run(
         'DELETE FROM tokens WHERE token = ?',
         [token]
       );
