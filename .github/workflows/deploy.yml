@@ -31,11 +31,7 @@ jobs:
           npm_config_optional: false
 
       - name: Run tests
-        run: |
-          # Fix Jest executable permissions
-          chmod +x node_modules/.bin/jest
-          # Run Jest with explicit node execution
-          node node_modules/.bin/jest
+        run: npm run test
         env:
           NODE_ENV: test
 
