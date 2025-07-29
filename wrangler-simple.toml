@@ -1,0 +1,13 @@
+name = "tamyla-data-service"
+main = "src/worker/index.js"
+compatibility_date = "2023-07-17"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tamyla-auth-db-local"
+database_id = "12ef163d-3b44-4b8b-83f0-09b51ef288ab"
+migrations_dir = "./migrations"
+
+[vars]
+NODE_ENV = "development"
