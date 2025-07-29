@@ -9,7 +9,7 @@
     "deploy": "wrangler deploy",
     "deploy:staging": "wrangler deploy --env staging",
     "deploy:prod": "wrangler deploy --env production",
-    "test": "jest",
+    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js",
     "test:unit": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js",
     "test:integration": "node --experimental-vm-modules --no-warnings tests/test-runner.js",
     "test:e2e": "node --experimental-vm-modules --no-warnings tests/e2e/run-e2e-tests.js",
