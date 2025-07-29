@@ -31,7 +31,7 @@ jobs:
           npm_config_optional: false
 
       - name: Run tests
-        run: npm test
+        run: npx jest
         env:
           NODE_ENV: test
 
