@@ -31,7 +31,11 @@ jobs:
           npm_config_optional: false
 
       - name: Run tests
-        run: node --version && npm --version && ls -la node_modules/.bin/ | head -10 && ./node_modules/.bin/jest --version && ./node_modules/.bin/jest
+        run: |
+          # Fix Jest executable permissions
+          chmod +x node_modules/.bin/jest
+          # Run Jest with explicit node execution
+          node node_modules/.bin/jest
         env:
           NODE_ENV: test
 
