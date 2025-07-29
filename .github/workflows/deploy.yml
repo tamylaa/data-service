@@ -31,7 +31,7 @@ jobs:
           npm_config_optional: false
 
       - name: Run tests
-        run: npx jest
+        run: node --version && npm --version && ls -la node_modules/.bin/ | head -10 && ./node_modules/.bin/jest --version && ./node_modules/.bin/jest
         env:
           NODE_ENV: test
 
