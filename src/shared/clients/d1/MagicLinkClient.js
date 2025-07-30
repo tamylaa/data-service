@@ -35,11 +35,9 @@ export class MagicLinkClient {
     const expiresAt = new Date(now.getTime() + (expiryMinutes * 60 * 1000));
     
     const magicLink = {
-      id: crypto.randomUUID(),
+      // Don't set id - let the database auto-increment it
       user_id: userId,
       token,
-      email: email.toLowerCase().trim(),
-      name: name.trim(),
       is_used: false,
       expires_at: expiresAt.toISOString(),
       created_at: now.toISOString(),
@@ -64,17 +62,13 @@ export class MagicLinkClient {
         magicLink.updated_at
       ]);
       
-      await this.d1Client.run(
+      const result = await this.d1Client.run(
         `INSERT INTO magic_links (
-          id, user_id, token, email, name, 
-          is_used, expires_at, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          user_id, token, is_used, expires_at, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
         [
-          magicLink.id,
           magicLink.user_id,
           magicLink.token,
-          magicLink.email,
-          magicLink.name,
           magicLink.is_used ? 1 : 0,
           magicLink.expires_at,
           magicLink.created_at,
@@ -84,8 +78,15 @@ export class MagicLinkClient {
       
       console.log('[MagicLinkClient] Successfully created magic link');
       
-      console.log(`[MagicLinkClient] Created magic link with token: ${token}`);
-      return this.mapMagicLink(magicLink);
+      // Get the auto-generated ID and return the complete record
+      const insertedId = result.meta.last_row_id;
+      const completeRecord = {
+        id: insertedId,
+        ...magicLink
+      };
+      
+      console.log(`[MagicLinkClient] Created magic link with ID: ${insertedId}, token: ${token}`);
+      return this.mapMagicLink(completeRecord);
     } catch (error) {
       console.error('[MagicLinkClient] Error creating magic link:', error);
       throw error;
@@ -335,8 +336,6 @@ export class MagicLinkClient {
       id: dbMagicLink.id,
       userId: dbMagicLink.user_id,
       token: dbMagicLink.token,
-      email: dbMagicLink.email,
-      name: dbMagicLink.name,
       isUsed: dbMagicLink.is_used === 1,
       expiresAt: dbMagicLink.expires_at,
       createdAt: dbMagicLink.created_at,

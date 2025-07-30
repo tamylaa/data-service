@@ -86,36 +86,29 @@ async function handleMagicLink(request, d1Client, env) {
       user = { id: userId, email, name: name || '', is_email_verified: 0 };
     }
     
-    // Generate magic link token
-    const magicToken = crypto.randomUUID();
-    const linkExpiresAt = new Date(Date.now() + 3600000).toISOString(); // 1 hour from now
-    const createTimestamp = d1Client.getCurrentTimestamp();
+    // Create magic link using the proper MagicLinkClient
+    console.log(`[Magic Link] Creating magic link for user ${user.id} (${user.email})`);
+    const magicLinkRecord = await d1Client.magicLinks.create({
+      userId: user.id,
+      email: user.email,
+      name: user.name || name || ''
+    });
     
-    // Create magic link
-    await d1Client.run(`
-      INSERT INTO magic_links (user_id, token, is_used, expires_at, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, [user.id, magicToken, 0, linkExpiresAt, createTimestamp, createTimestamp]);
-    
-    console.log(`Magic link generated for user ${user.id} (${user.email})`);
-
-    // Get FRONTEND_URL from environment variables
-    const frontendUrl = env?.FRONTEND_URL || 'http://localhost:3000';
-    const magicLink = `${frontendUrl}/auth/verify?token=${magicToken}`;
+    console.log(`Magic link generated:`, {
+      id: magicLinkRecord.id,
+      token: magicLinkRecord.token,
+      expiresAt: magicLinkRecord.expiresAt
+    });
     
     console.log('Magic link generation successful');
     
-    // For development and test, return the magic link and token in the response
-    const isDevOrTest = env?.NODE_ENV === 'development' || env?.NODE_ENV === 'test';
-    
+    // Return magic link data - auth service will construct the proper URL
     return jsonResponse({
       success: true,
       message: 'Magic link generated successfully',
-      // Include token in test/development for automated testing
-      token: isDevOrTest ? magicToken : undefined,
-      // Include magic link in development for manual testing
-      magicLink: isDevOrTest ? magicLink : undefined,
-      expiresAt: linkExpiresAt
+      id: magicLinkRecord.id,
+      token: magicLinkRecord.token, // Auth service needs this to construct the magic link
+      expiresAt: magicLinkRecord.expiresAt
     });
     
   } catch (error) {
