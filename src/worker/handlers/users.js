@@ -9,7 +9,7 @@ import { jsonResponse } from '../utils/response.js';
  */
 export async function handleUsers(request, d1Client, env) {
   const url = new URL(request.url);
-  const path = url.pathname.replace('/api/users', '');
+  const path = url.pathname.replace('/api/users', '').replace('/users', '');
   const userId = path.split('/')[1]; // Extract user ID from path if present
 
   try {
