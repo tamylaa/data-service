@@ -1,0 +1,10 @@
+{
+  "name": "schema-validation",
+  "scripts": {
+    "validate:schema": "node validate-schema.js",
+    "migrate:local": "npx wrangler d1 migrations apply tamyla-auth-db-local --local",
+    "migrate:staging": "npx wrangler d1 migrations apply tamyla-auth-db-staging --env staging --remote",
+    "migrate:production": "npx wrangler d1 migrations apply tamyla-auth-db --env production --remote",
+    "migration:status": "npx wrangler d1 migrations list tamyla-auth-db-local --local && npx wrangler d1 migrations list tamyla-auth-db-staging --env staging --remote && npx wrangler d1 migrations list tamyla-auth-db --env production --remote"
+  }
+}

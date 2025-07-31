@@ -1,0 +1,127 @@
+{
+  "timestamp": "2025-07-31T13:58:31.814Z",
+  "summary": {
+    "environments_tested": 3,
+    "schemas_consistent": false,
+    "total_validations": 3,
+    "passed_validations": 2,
+    "failed_validations": 1
+  },
+  "environments": {
+    "local": {
+      "status": "PASS",
+      "tables_found": 6,
+      "indexes_found": 9,
+      "errors": [],
+      "validation": {
+        "environment": "local",
+        "tables": {
+          "users": {
+            "exists": true,
+            "valid": true
+          },
+          "magic_links": {
+            "exists": true,
+            "valid": true
+          },
+          "tokens": {
+            "exists": true,
+            "valid": true
+          }
+        },
+        "indexes": {},
+        "overall": true,
+        "errors": []
+      }
+    },
+    "staging": {
+      "status": "FAIL",
+      "tables_found": 0,
+      "indexes_found": 0,
+      "errors": [
+        "Missing table: users",
+        "Missing table: magic_links",
+        "Missing table: tokens"
+      ],
+      "validation": {
+        "environment": "staging",
+        "tables": {
+          "users": {
+            "exists": false,
+            "valid": false
+          },
+          "magic_links": {
+            "exists": false,
+            "valid": false
+          },
+          "tokens": {
+            "exists": false,
+            "valid": false
+          }
+        },
+        "indexes": {},
+        "overall": false,
+        "errors": [
+          "Missing table: users",
+          "Missing table: magic_links",
+          "Missing table: tokens"
+        ]
+      }
+    },
+    "production": {
+      "status": "PASS",
+      "tables_found": 5,
+      "indexes_found": 9,
+      "errors": [],
+      "validation": {
+        "environment": "production",
+        "tables": {
+          "users": {
+            "exists": true,
+            "valid": true
+          },
+          "magic_links": {
+            "exists": true,
+            "valid": true
+          },
+          "tokens": {
+            "exists": true,
+            "valid": true
+          }
+        },
+        "indexes": {},
+        "overall": true,
+        "errors": []
+      }
+    }
+  },
+  "comparison": {
+    "consistent": false,
+    "differences": [
+      {
+        "environment": "staging",
+        "differences": [
+          "Missing table: _cf_METADATA",
+          "Missing table: d1_migrations",
+          "Missing table: magic_links",
+          "Missing table: test_users",
+          "Missing table: tokens",
+          "Missing table: users"
+        ]
+      },
+      {
+        "environment": "production",
+        "differences": [
+          "Missing table: _cf_METADATA",
+          "Missing table: test_users",
+          "Extra table: _cf_KV"
+        ]
+      }
+    ],
+    "reference": "local"
+  },
+  "recommendations": [
+    "Run database migrations on inconsistent environments",
+    "Review migration files for missing schema changes"
+  ]
+}

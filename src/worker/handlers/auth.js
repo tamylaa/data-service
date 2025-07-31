@@ -274,8 +274,13 @@ async function handleGetCurrentUser(request, d1Client, env) {
     id: user.id,
     email: user.email,
     name: user.name,
+    phone: user.phone,
+    company: user.company,
+    position: user.position,
     is_email_verified: user.is_email_verified,
-    lastLogin: user.lastLogin
+    isEmailVerified: user.isEmailVerified,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt
   });
 }
 
@@ -302,7 +307,7 @@ export async function handleUpdateCurrentUser(request, d1Client, env) {
     // Verify the JWT token
     let decoded;
     try {
-      decoded = verifyToken(token, env);
+      decoded = await verifyToken(token, env.JWT_SECRET);
       console.log('Token verified successfully for user:', decoded.email);
     } catch (tokenError) {
       console.error('Token verification failed:', tokenError.message);
@@ -329,32 +334,18 @@ export async function handleUpdateCurrentUser(request, d1Client, env) {
 
     console.log('Updating user profile for user ID:', decoded.userId);
 
-    // Update the user in the database
-    const updateResult = await d1Client.prepare(`
-      UPDATE users 
-      SET name = ?, phone = ?, company = ?, position = ?, updated_at = ?
-      WHERE id = ?
-    `).bind(
-      updateData.name,
-      updateData.phone,
-      updateData.company,
-      updateData.position,
-      updateData.updated_at,
-      decoded.userId
-    ).run();
+    // Update the user in the database using the D1Client wrapper
+    const updateResult = await d1Client.users.update(decoded.userId, updateData);
 
-    if (!updateResult.success) {
-      console.error('Database update failed:', updateResult);
+    if (!updateResult) {
+      console.error('Database update failed');
       return jsonResponse({ error: 'Failed to update user profile' }, 500);
     }
 
-    console.log('User profile updated successfully, changes:', updateResult.changes);
+    console.log('User profile updated successfully, changes:', updateResult);
 
     // Fetch the updated user data
-    const updatedUser = await d1Client.prepare(`
-      SELECT id, email, name, phone, company, position, is_email_verified, created_at, updated_at
-      FROM users WHERE id = ?
-    `).bind(decoded.userId).first();
+    const updatedUser = await d1Client.users.findById(decoded.userId);
 
     if (!updatedUser) {
       return jsonResponse({ error: 'User not found after update' }, 404);

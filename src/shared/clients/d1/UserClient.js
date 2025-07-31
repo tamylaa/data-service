@@ -163,6 +163,21 @@ export class UserClient {
       params.push(updates.name);
     }
     
+    if ('phone' in updates) {
+      fields.push('phone = ?');
+      params.push(updates.phone);
+    }
+    
+    if ('company' in updates) {
+      fields.push('company = ?');
+      params.push(updates.company);
+    }
+    
+    if ('position' in updates) {
+      fields.push('position = ?');
+      params.push(updates.position);
+    }
+    
     if ('is_email_verified' in updates) {
       fields.push('is_email_verified = ?');
       params.push(updates.is_email_verified ? 1 : 0);
@@ -224,6 +239,9 @@ export class UserClient {
       id: dbUser.id,
       email: dbUser.email,
       name: dbUser.name,
+      phone: dbUser.phone,
+      company: dbUser.company,
+      position: dbUser.position,
       is_email_verified: dbUser.is_email_verified === 1,
       isEmailVerified: dbUser.is_email_verified === 1, // camelCase for frontend
       createdAt: dbUser.created_at,
