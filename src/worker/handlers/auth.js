@@ -21,6 +21,8 @@ export async function handleAuth(request, d1Client, env) {
       return await handleVerifyMagicLink(request, d1Client, env);
     } else if (path === '/auth/me' && request.method === 'GET') {
       return await handleGetCurrentUser(request, d1Client, env);
+    } else if (path === '/auth/me' && request.method === 'PUT') {
+      return await handleUpdateCurrentUser(request, d1Client, env);
     } else if (path === '/register' && request.method === 'POST') {
       return await handleRegister(request, d1Client, env);
     } else if (path === '/health' && request.method === 'GET') {
@@ -275,6 +277,122 @@ async function handleGetCurrentUser(request, d1Client, env) {
     is_email_verified: user.is_email_verified,
     lastLogin: user.lastLogin
   });
+}
+
+/**
+ * Handle current user profile update
+ * @param {Request} request - The incoming request
+ * @param {D1Client} d1Client - The D1 database client
+ * @param {Object} env - The Cloudflare Workers environment
+ * @returns {Promise<Response>} The user update response
+ */
+export async function handleUpdateCurrentUser(request, d1Client, env) {
+  try {
+    console.log('=== Starting user profile update ===');
+    
+    // Get the authorization token from the header
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return jsonResponse({ error: 'Authorization token required' }, 401);
+    }
+
+    const token = authHeader.substring(7);
+    console.log('Token received for profile update');
+
+    // Verify the JWT token
+    let decoded;
+    try {
+      decoded = verifyToken(token, env);
+      console.log('Token verified successfully for user:', decoded.email);
+    } catch (tokenError) {
+      console.error('Token verification failed:', tokenError.message);
+      return jsonResponse({ error: 'Invalid or expired token' }, 401);
+    }
+
+    // Get the profile data from the request body
+    const profileData = await request.json();
+    console.log('Profile update data received:', JSON.stringify(profileData, null, 2));
+    
+    // Validate required fields
+    if (!profileData.name || !profileData.phone) {
+      return jsonResponse({ error: 'Name and phone are required' }, 400);
+    }
+
+    // Prepare update data
+    const updateData = {
+      name: profileData.name.trim(),
+      phone: profileData.phone.trim(),
+      company: profileData.company ? profileData.company.trim() : '',
+      position: profileData.position ? profileData.position.trim() : '',
+      updated_at: new Date().toISOString()
+    };
+
+    console.log('Updating user profile for user ID:', decoded.userId);
+
+    // Update the user in the database
+    const updateResult = await d1Client.prepare(`
+      UPDATE users 
+      SET name = ?, phone = ?, company = ?, position = ?, updated_at = ?
+      WHERE id = ?
+    `).bind(
+      updateData.name,
+      updateData.phone,
+      updateData.company,
+      updateData.position,
+      updateData.updated_at,
+      decoded.userId
+    ).run();
+
+    if (!updateResult.success) {
+      console.error('Database update failed:', updateResult);
+      return jsonResponse({ error: 'Failed to update user profile' }, 500);
+    }
+
+    console.log('User profile updated successfully, changes:', updateResult.changes);
+
+    // Fetch the updated user data
+    const updatedUser = await d1Client.prepare(`
+      SELECT id, email, name, phone, company, position, is_email_verified, created_at, updated_at
+      FROM users WHERE id = ?
+    `).bind(decoded.userId).first();
+
+    if (!updatedUser) {
+      return jsonResponse({ error: 'User not found after update' }, 404);
+    }
+
+    console.log('Updated user data retrieved:', updatedUser.email);
+
+    // Check if profile is complete (has required fields)
+    const profileComplete = !!(updatedUser.name && updatedUser.phone);
+
+    // Return the updated user data
+    return jsonResponse({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        phone: updatedUser.phone,
+        company: updatedUser.company || '',
+        position: updatedUser.position || '',
+        isEmailVerified: !!updatedUser.is_email_verified,
+        profileComplete: profileComplete,
+        createdAt: updatedUser.created_at,
+        updatedAt: updatedUser.updated_at
+      }
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    return jsonResponse(
+      { 
+        error: 'Failed to update profile',
+        message: error.message,
+        details: env.NODE_ENV === 'development' ? error.stack : undefined
+      },
+      500
+    );
+  }
 }
 
 /**
