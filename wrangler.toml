@@ -69,7 +69,7 @@ workers_dev = true
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "tamyla-auth-db-staging"
-database_id = "373a1466-3086-4132-a4f6-a7b1a64a3a41"
+database_id = "b2d43c7a-dbb9-43b4-afe5-bd0d3c4cf618"
 migrations_dir = "./migrations"
 
 [env.staging.vars]
