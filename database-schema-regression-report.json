@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-07-31T13:58:31.814Z",
+  "timestamp": "2025-07-31T14:24:29.247Z",
   "summary": {
     "environments_tested": 3,
-    "schemas_consistent": false,
+    "schemas_consistent": true,
     "total_validations": 3,
-    "passed_validations": 2,
-    "failed_validations": 1
+    "passed_validations": 3,
+    "failed_validations": 0
   },
   "environments": {
     "local": {
@@ -35,37 +35,29 @@
       }
     },
     "staging": {
-      "status": "FAIL",
-      "tables_found": 0,
-      "indexes_found": 0,
-      "errors": [
-        "Missing table: users",
-        "Missing table: magic_links",
-        "Missing table: tokens"
-      ],
+      "status": "PASS",
+      "tables_found": 5,
+      "indexes_found": 9,
+      "errors": [],
       "validation": {
         "environment": "staging",
         "tables": {
           "users": {
-            "exists": false,
-            "valid": false
+            "exists": true,
+            "valid": true
           },
           "magic_links": {
-            "exists": false,
-            "valid": false
+            "exists": true,
+            "valid": true
           },
           "tokens": {
-            "exists": false,
-            "valid": false
+            "exists": true,
+            "valid": true
           }
         },
         "indexes": {},
-        "overall": false,
-        "errors": [
-          "Missing table: users",
-          "Missing table: magic_links",
-          "Missing table: tokens"
-        ]
+        "overall": true,
+        "errors": []
       }
     },
     "production": {
@@ -96,32 +88,9 @@
     }
   },
   "comparison": {
-    "consistent": false,
-    "differences": [
-      {
-        "environment": "staging",
-        "differences": [
-          "Missing table: _cf_METADATA",
-          "Missing table: d1_migrations",
-          "Missing table: magic_links",
-          "Missing table: test_users",
-          "Missing table: tokens",
-          "Missing table: users"
-        ]
-      },
-      {
-        "environment": "production",
-        "differences": [
-          "Missing table: _cf_METADATA",
-          "Missing table: test_users",
-          "Extra table: _cf_KV"
-        ]
-      }
-    ],
+    "consistent": true,
+    "differences": [],
     "reference": "local"
   },
-  "recommendations": [
-    "Run database migrations on inconsistent environments",
-    "Review migration files for missing schema changes"
-  ]
+  "recommendations": []
 }

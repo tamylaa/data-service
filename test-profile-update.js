@@ -7,7 +7,7 @@
 
 import fetch from 'node-fetch';
 
-const API_BASE = 'https://data-service-staging.tamylatrading.workers.dev';
+const API_BASE = 'https://data-service.tamylatrading.workers.dev';
 
 async function testProfileUpdate() {
   console.log('🧪 Testing Profile Update Functionality');
