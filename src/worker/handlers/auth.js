@@ -23,6 +23,8 @@ export async function handleAuth(request, d1Client, env) {
       return await handleGetCurrentUser(request, d1Client, env);
     } else if (path === '/auth/me' && request.method === 'PUT') {
       return await handleUpdateCurrentUser(request, d1Client, env);
+    } else if (path === '/auth/debug-user' && request.method === 'GET') {
+      return await handleDebugUser(request, d1Client, env);
     } else if (path === '/register' && request.method === 'POST') {
       return await handleRegister(request, d1Client, env);
     } else if (path === '/health' && request.method === 'GET') {
@@ -411,5 +413,49 @@ export async function handleHealth(request, d1Client, env) {
       timestamp: new Date().toISOString(),
       error: 'Database connection failed'
     }, 503);
+  }
+}
+
+/**
+ * Debug endpoint to check user state and database schema
+ * @param {Request} request - The incoming request
+ * @param {D1Client} d1Client - The D1 database client
+ * @param {Object} env - The Cloudflare Workers environment
+ * @returns {Promise<Response>} Debug information
+ */
+export async function handleDebugUser(request, d1Client, env) {
+  try {
+    const url = new URL(request.url);
+    const email = url.searchParams.get('email') || 'productbees1@gmail.com';
+    
+    console.log('=== DEBUG USER STATE ===');
+    console.log('Checking user:', email);
+    
+    // Check database schema
+    const schemaResult = await d1Client.prepare('PRAGMA table_info(users)').all();
+    console.log('Users table schema:', schemaResult);
+    
+    // Get user record
+    const user = await d1Client.users.findByEmail(email);
+    console.log('User record:', user);
+    
+    // Get raw user from database
+    const rawUser = await d1Client.prepare('SELECT * FROM users WHERE email = ?').bind(email).first();
+    console.log('Raw user record:', rawUser);
+    
+    return jsonResponse({
+      email,
+      schema: schemaResult.results || schemaResult,
+      userViaModel: user,
+      userRaw: rawUser,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Debug user error:', error);
+    return jsonResponse({
+      error: 'Debug failed',
+      message: error.message,
+      stack: env.NODE_ENV === 'development' ? error.stack : undefined
+    }, 500);
   }
 }
