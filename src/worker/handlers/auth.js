@@ -190,7 +190,14 @@ async function handleVerifyMagicLink(request, d1Client, env) {
       id: user.id,
       email: user.email,
       name: user.name,
-      is_email_verified: user.is_email_verified
+      phone: user.phone,
+      company: user.company,
+      position: user.position,
+      is_email_verified: user.is_email_verified,
+      isEmailVerified: !!user.is_email_verified,
+      profileComplete: !!(user.name && user.phone && user.company && user.position),
+      createdAt: user.created_at,
+      updatedAt: user.updated_at
     }
   });
 }
