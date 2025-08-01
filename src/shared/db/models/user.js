@@ -143,7 +143,7 @@ export class UserModel extends BaseD1Client {
    */
   async update(userId, updates) {
     const now = new Date().toISOString();
-    const allowedUpdates = ['name', 'email', 'is_email_verified', 'last_login'];
+    const allowedUpdates = ['name', 'email', 'phone', 'company', 'position', 'is_email_verified', 'last_login'];
     
     // Filter and prepare updates
     const updateFields = [];
