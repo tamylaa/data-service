@@ -122,7 +122,7 @@ export default {
           NODE_ENV: env.NODE_ENV || 'development',
           
           // Authentication
-          AUTH_JWT_SECRET: env.AUTH_JWT_SECRET,
+          JWT_SECRET: env.JWT_SECRET,
           
           // Frontend
           FRONTEND_URL: env.FRONTEND_URL || 'http://localhost:3000',
@@ -136,18 +136,18 @@ export default {
         if (workerEnv.NODE_ENV !== 'production') {
           console.log('Environment variables:', {
             ...workerEnv,
-            AUTH_JWT_SECRET: workerEnv.AUTH_JWT_SECRET ? '[REDACTED]' : 'NOT SET'
+            JWT_SECRET: workerEnv.JWT_SECRET ? '[REDACTED]' : 'NOT SET'
           });
         }
         
         // Ensure JWT_SECRET is set
-        if (!workerEnv.AUTH_JWT_SECRET) {
-          console.error('AUTH_JWT_SECRET is not set in environment variables');
+        if (!workerEnv.JWT_SECRET) {
+          console.error('JWT_SECRET is not set in environment variables');
           return new Response(
             JSON.stringify({ 
               success: false, 
               error: 'Server configuration error',
-              message: 'AUTH_JWT_SECRET is not configured',
+              message: 'JWT_SECRET is not configured',
               envKeys: Object.keys(env).filter(k => !k.startsWith('_'))
             }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }

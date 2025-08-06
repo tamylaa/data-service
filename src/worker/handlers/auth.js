@@ -179,7 +179,7 @@ async function handleVerifyMagicLink(request, d1Client, env) {
   // Generate JWT token
   const authToken = await generateToken(
     { userId: user.id, email: user.email },
-    env.AUTH_JWT_SECRET || 'test-secret',
+    env.JWT_SECRET || 'test-secret',
     '7d' // 7 days expiration
   );
 
@@ -240,7 +240,7 @@ async function handleRegister(request, d1Client, env) {
     });
 
     // Generate auth token
-    const token = generateToken(user, env.AUTH_JWT_SECRET);
+    const token = generateToken(user, env.JWT_SECRET);
 
     return jsonResponse({
       user: {
@@ -270,7 +270,7 @@ async function handleGetCurrentUser(request, d1Client, env) {
   }
 
   const token = authHeader.split(' ')[1];
-  const decoded = await verifyToken(token, env.AUTH_JWT_SECRET);
+  const decoded = await verifyToken(token, env.JWT_SECRET);
   
   const user = await d1Client.users.findById(decoded.userId);
   if (!user) {
@@ -314,7 +314,7 @@ export async function handleUpdateCurrentUser(request, d1Client, env) {
     // Verify the JWT token
     let decoded;
     try {
-      decoded = await verifyToken(token, env.AUTH_JWT_SECRET);
+      decoded = await verifyToken(token, env.JWT_SECRET);
       console.log('Token verified successfully for user:', decoded.email);
     } catch (tokenError) {
       console.error('Token verification failed:', tokenError.message);
