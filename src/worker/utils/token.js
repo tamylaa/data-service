@@ -7,7 +7,7 @@
  */
 export async function generateToken(payload, secret, expiresIn = '7d') {
   if (!secret) {
-    throw new Error('JWT_SECRET is not defined');
+    throw new Error('AUTH_JWT_SECRET is not defined');
   }
 
   // Calculate expiration time
@@ -95,7 +95,7 @@ export async function verifyToken(token, secret) {
   }
 
   if (!secret) {
-    throw new Error('JWT_SECRET is not defined');
+    throw new Error('AUTH_JWT_SECRET is not defined');
   }
 
   const [encodedHeader, encodedData, signature] = token.split('.');
