@@ -32,7 +32,7 @@ migrations_dir = "./migrations"
 # Development environment variables
 [env.development.vars]
 NODE_ENV = "development"
-JWT_SECRET = "dev-secret-key"
+AUTH_JWT_SECRET = "d49f3be21dc5ebb3e95e4dfee78f524f8899313ccde1ce362c5df2d33429ad61"
 BASE_URL = "http://localhost:3002"
 FRONTEND_URL = "http://localhost:3000"
 MAGIC_LINK_EXPIRY_MINUTES = "15"
@@ -53,7 +53,7 @@ migrations_dir = "./migrations"
 
 [env.production.vars]
 NODE_ENV = "production"
-JWT_SECRET = "${JWT_SECRET}"
+# AUTH_JWT_SECRET is set as a Cloudflare Workers secret using: npx wrangler secret put AUTH_JWT_SECRET --env production
 BASE_URL = "https://data-service.tamylatrading.workers.dev"
 FRONTEND_URL = "https://app.tamylatrading.com"
 MAGIC_LINK_EXPIRY_MINUTES = "15"
@@ -74,7 +74,7 @@ migrations_dir = "./migrations"
 
 [env.staging.vars]
 NODE_ENV = "staging"
-JWT_SECRET = "${JWT_SECRET}"
+# AUTH_JWT_SECRET is set as a Cloudflare Workers secret using: npx wrangler secret put AUTH_JWT_SECRET --env staging
 BASE_URL = "https://data-service-staging.tamylatrading.workers.dev"
 FRONTEND_URL = "https://staging.tamylatrading.com"
 MAGIC_LINK_EXPIRY_MINUTES = "15"
