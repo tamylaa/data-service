@@ -165,10 +165,9 @@ export default {
         return new Response(JSON.stringify(files), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
       if (pathname === '/files' && request.method === 'POST') {
-        // Create file metadata
-        const data = await request.json();
-        const file = await fileHandlers.createFileMetadata(data, d1Client);
-        return new Response(JSON.stringify(file), { status: 201, headers: { 'Content-Type': 'application/json' } });
+        // Use modular handler for POST /files
+        const { handleFilesPost } = await import('./handlers/files-post.js');
+        return handleFilesPost(request, d1Client);
       }
       if (pathname.startsWith('/files/') && request.method === 'GET') {
         // Get file metadata by ID

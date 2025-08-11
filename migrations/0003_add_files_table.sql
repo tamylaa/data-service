@@ -1,5 +1,5 @@
 -- Add files table for content store metadata
--- Migration: 0003_add_files_table.sql
+-- Migration: 0003_add_files_table
 
 CREATE TABLE IF NOT EXISTS files (
   id TEXT PRIMARY KEY,
