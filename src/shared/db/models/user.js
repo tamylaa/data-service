@@ -3,7 +3,7 @@
  * Handles all database operations for users
  */
 
-import { BaseD1Client } from '../baseClient.js';
+import { BaseD1Client } from '../../clients/d1/BaseD1Client.js';
 
 export class UserModel extends BaseD1Client {
   constructor({ db }) {

@@ -3,7 +3,7 @@
  * Handles tenant (organization) management and operations
  */
 
-import { BaseD1Client } from '../baseClient.js';
+import { BaseD1Client } from '../../clients/d1/BaseD1Client.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export class TenantModel extends BaseD1Client {

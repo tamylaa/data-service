@@ -1,9 +1,8 @@
 /**
- * D1 Database Client
- * Main entry point for database operations using sub-clients
+ * D1Client extending BaseD1Client with model-specific functionality
  */
 
-import { BaseD1Client } from './baseClient.js';
+import { BaseD1Client } from '../clients/d1/BaseD1Client.js';
 import { UserClient } from '../clients/d1/UserClient.js';
 import { MagicLinkClient } from '../clients/d1/MagicLinkClient.js';
 import { TokenClient } from '../clients/d1/TokenClient.js';

@@ -1,9 +1,9 @@
 /**
- * MagicLink Model
- * Handles all database operations for magic links
+ * Magic Link Model
+ * Handles magic link generation, validation, and cleanup
  */
 
-import { BaseD1Client } from '../baseClient.js';
+import { BaseD1Client } from '../../clients/d1/BaseD1Client.js';
 
 // Web Crypto API is available in both Node.js and browsers/workers
 const crypto = {

@@ -1,9 +1,10 @@
 // ...existing code...
-import { BaseD1Client } from './base-d1-client';
+import { BaseD1Client } from '../../clients/d1/BaseD1Client.js';
 
 export class FileModel extends BaseD1Client {
   constructor(db) {
-    super(db, 'files');
+    super(db);
+    this.tableName = 'files';
   }
 
   // Normalize file metadata (e.g., trim filename, lowercase mime_type)
