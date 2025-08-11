@@ -199,15 +199,23 @@ export default {
       return new Response('Not Found', { status: 404 });
     } catch (error) {
       console.error('Error handling request:', error);
+      let errorDetails = {
+        success: false,
+        error: 'Internal Server Error',
+        message: error && error.message ? error.message : String(error)
+      };
+      if (error && error.stack) errorDetails.stack = error.stack;
+      // If error is an object with more info, include it
+      if (typeof error === 'object') {
+        for (const k of Object.keys(error)) {
+          if (!(k in errorDetails)) errorDetails[k] = error[k];
+        }
+      }
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Internal Server Error',
-          message: error.message 
-        }), 
-        { 
-          status: 500, 
-          headers: { 'Content-Type': 'application/json' } 
+        JSON.stringify(errorDetails),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
         }
       );
     }
