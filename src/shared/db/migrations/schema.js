@@ -30,10 +30,30 @@ export const INITIAL_SCHEMA = [
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
   )`,
   
+  // Files table
+  `CREATE TABLE IF NOT EXISTS files (
+    id TEXT PRIMARY KEY,
+    original_filename TEXT NOT NULL,
+    file_size INTEGER NOT NULL,
+    mime_type TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    owner_id TEXT NOT NULL,
+    storage_path TEXT NOT NULL UNIQUE,
+    is_public INTEGER DEFAULT 0,
+    category TEXT,
+    checksum TEXT,
+    last_accessed_at TEXT,
+    download_count INTEGER DEFAULT 0
+  )`,
+
   // Indexes
   `CREATE INDEX IF NOT EXISTS idx_magic_links_token ON magic_links(token)`,
   `CREATE INDEX IF NOT EXISTS idx_magic_links_user_id ON magic_links(user_id)`,
-  `CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`
+  `CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`,
+  `CREATE INDEX IF NOT EXISTS idx_files_owner_id ON files(owner_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_files_checksum ON files(checksum)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS idx_files_storage_path ON files(storage_path)`,
+  `CREATE INDEX IF NOT EXISTS idx_files_created_at ON files(created_at)`
 ];
 
 /**

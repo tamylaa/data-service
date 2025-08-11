@@ -67,6 +67,31 @@ export const DATABASE_SCHEMA = {
         name: 'idx_unique_token'
       }
     ]
+  },
+
+  // Files table - stores file metadata for content store
+  files: {
+    name: 'files',
+    columns: [
+      { name: 'id', type: 'TEXT', constraints: ['PRIMARY KEY'] },
+      { name: 'original_filename', type: 'TEXT', constraints: ['NOT NULL'] },
+      { name: 'file_size', type: 'INTEGER', constraints: ['NOT NULL'] },
+      { name: 'mime_type', type: 'TEXT', constraints: ['NOT NULL'] },
+      { name: 'created_at', type: 'TEXT', constraints: ['NOT NULL'] },
+      { name: 'owner_id', type: 'TEXT', constraints: ['NOT NULL'] },
+      { name: 'storage_path', type: 'TEXT', constraints: ['NOT NULL', 'UNIQUE'] },
+      { name: 'is_public', type: 'INTEGER', constraints: ['DEFAULT 0'] },
+      { name: 'category', type: 'TEXT' },
+      { name: 'checksum', type: 'TEXT' },
+      { name: 'last_accessed_at', type: 'TEXT' },
+      { name: 'download_count', type: 'INTEGER', constraints: ['DEFAULT 0'] }
+    ],
+    indexes: [
+      { columns: ['owner_id'] },
+      { columns: ['checksum'] },
+      { columns: ['storage_path'], unique: true },
+      { columns: ['created_at'] }
+    ]
   }
 };
 

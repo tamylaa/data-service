@@ -4,11 +4,11 @@ main = "src/worker/index.js"
 compatibility_date = "2023-07-17"
 compatibility_flags = ["nodejs_compat"]
 
-# Default D1 Database Binding
+# Default D1 Database Binding - using staging for default deploys
 [[d1_databases]]
 binding = "DB"
-database_name = "tamyla-auth-db-local"
-database_id = "12ef163d-3b44-4b8b-83f0-09b51ef288ab"
+database_name = "tamyla-auth-db-staging"
+database_id = "b2d43c7a-dbb9-43b4-afe5-bd0d3c4cf618"
 migrations_dir = "./migrations"
 
 # Development server configuration
@@ -55,7 +55,7 @@ migrations_dir = "./migrations"
 NODE_ENV = "production"
 # AUTH_JWT_SECRET is set as a Cloudflare Workers secret using: npx wrangler secret put AUTH_JWT_SECRET --env production
 BASE_URL = "https://data-service.tamylatrading.workers.dev"
-FRONTEND_URL = "https://app.tamylatrading.com"
+FRONTEND_URL = "https://tamyla.com"
 MAGIC_LINK_EXPIRY_MINUTES = "15"
 RATE_LIMIT_WINDOW_MS = "900000"
 RATE_LIMIT_MAX = "100"
@@ -76,7 +76,7 @@ migrations_dir = "./migrations"
 NODE_ENV = "staging"
 # AUTH_JWT_SECRET is set as a Cloudflare Workers secret using: npx wrangler secret put AUTH_JWT_SECRET --env staging
 BASE_URL = "https://data-service-staging.tamylatrading.workers.dev"
-FRONTEND_URL = "https://staging.tamylatrading.com"
+FRONTEND_URL = "https://tamyla.com"
 MAGIC_LINK_EXPIRY_MINUTES = "15"
 RATE_LIMIT_WINDOW_MS = "900000"
 RATE_LIMIT_MAX = "100"

@@ -2,6 +2,7 @@ import { initD1Client, getD1Client } from '../shared/clients/d1/index.js';
 import { handleAuth } from './handlers/auth.js';
 import { handleUsers } from './handlers/users.js';
 import { handleHealth } from './handlers/health.js';
+import * as fileHandlers from './handlers/files.js';
 import { getEnv, isDevelopment, isTest, isProduction } from './utils/env.js';
 
 // Simple in-memory cache for development
@@ -157,11 +158,44 @@ export default {
         return handleAuth(request, d1Client, workerEnv);
       }
       
+      // Files endpoints
+      if (pathname === '/files' && request.method === 'GET') {
+        // List files
+        const files = await fileHandlers.listFiles(request, d1Client);
+        return new Response(JSON.stringify(files), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      if (pathname === '/files' && request.method === 'POST') {
+        // Create file metadata
+        const data = await request.json();
+        const file = await fileHandlers.createFileMetadata(data, d1Client);
+        return new Response(JSON.stringify(file), { status: 201, headers: { 'Content-Type': 'application/json' } });
+      }
+      if (pathname.startsWith('/files/') && request.method === 'GET') {
+        // Get file metadata by ID
+        const id = pathname.split('/')[2];
+        const file = await fileHandlers.getFileById(id, d1Client);
+        if (!file) return new Response('Not Found', { status: 404 });
+        return new Response(JSON.stringify(file), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      if (pathname.startsWith('/files/') && request.method === 'PATCH') {
+        // Update file metadata
+        const id = pathname.split('/')[2];
+        const updates = await request.json();
+        const file = await fileHandlers.updateFileMetadata(id, updates, d1Client);
+        return new Response(JSON.stringify(file), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      if (pathname.startsWith('/files/') && request.method === 'DELETE') {
+        // Delete file metadata
+        const id = pathname.split('/')[2];
+        await fileHandlers.deleteFileMetadata(id, d1Client);
+        return new Response(JSON.stringify({ id }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+
       // Users endpoints - handle both /api/users and /users
       if (pathname.startsWith('/users')) {
         return handleUsers(request, d1Client, env);
       }
-      
+
       // Return 404 for all other routes
       return new Response('Not Found', { status: 404 });
     } catch (error) {
