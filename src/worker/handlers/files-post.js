@@ -13,13 +13,23 @@ export async function handleFilesPost(request, d1Client) {
       console.error('[POST /files] Validation error:', validation.errors);
       return errorResponse('Invalid file metadata', 400, { errors: validation.errors });
     }
-    const file = await createFileMetadata(data, d1Client);
-    console.log('[POST /files] Created file:', JSON.stringify(file, null, 2));
-    return successResponse(file, 201);
+    try {
+      const file = await createFileMetadata(data, d1Client);
+      console.log('[POST /files] Created file:', JSON.stringify(file, null, 2));
+      return successResponse(file, 201);
+    } catch (dbErr) {
+      console.error('[POST /files] DB error:', dbErr && dbErr.message ? dbErr.message : dbErr);
+      if (dbErr && dbErr.stack) console.error('[POST /files] DB Stack:', dbErr.stack);
+      return errorResponse('Database error creating file metadata', 500, {
+        message: dbErr && dbErr.message ? dbErr.message : String(dbErr),
+        stack: dbErr && dbErr.stack ? dbErr.stack : undefined,
+        payload: data
+      });
+    }
   } catch (err) {
     console.error('[POST /files] Error:', err && err.message ? err.message : err);
     if (err && err.stack) console.error('[POST /files] Stack:', err.stack);
-    return errorResponse('Failed to create file metadata', 500, {
+    return errorResponse('Failed to process file metadata request', 500, {
       message: err && err.message ? err.message : String(err),
       stack: err && err.stack ? err.stack : undefined
     });
