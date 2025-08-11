@@ -16,8 +16,8 @@ export function validateFilePayload(data) {
   if (typeof data.file_size !== 'number' || data.file_size < 0) {
     errors.push('file_size must be a non-negative number');
   }
-  if (typeof data.is_public !== 'boolean') {
-    errors.push('is_public must be a boolean');
+  if (!(typeof data.is_public === 'boolean' || data.is_public === 0 || data.is_public === 1)) {
+    errors.push('is_public must be a boolean or 0/1 integer');
   }
   // Add more type checks as needed
   return {
