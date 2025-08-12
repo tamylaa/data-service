@@ -1,0 +1,113 @@
+# Base configuration for all environments
+name = "data-service-dev"  # Default to development
+main = "src/worker/index.js"
+compatibility_date = "2023-07-17"
+compatibility_flags = ["nodejs_compat"]
+
+# Default D1 Database Binding - using development for default deploys
+[[d1_databases]]
+binding = "DB"
+database_name = "tamyla-auth-db-local"
+database_id = "12ef163d-3b44-4b8b-83f0-09b51ef288ab"
+migrations_dir = "./migrations"
+
+# Default environment variables (development)
+[vars]
+NODE_ENV = "development"
+AUTH_JWT_SECRET = "d49f3be21dc5ebb3e95e4dfee78f524f8899313ccde1ce362c5df2d33429ad61"
+BASE_URL = "http://localhost:3002"
+FRONTEND_URL = "http://localhost:3000"
+MAGIC_LINK_EXPIRY_MINUTES = "15"
+RATE_LIMIT_WINDOW_MS = "900000"
+RATE_LIMIT_MAX = "100"
+
+# Development server configuration
+[dev]
+port = 3002
+ip = "localhost"
+
+# Local development settings (same as default now)
+[env.development]
+name = "data-service-dev"
+main = "src/worker/index.js"
+workers_dev = true
+
+# Development D1 Database Binding (same as default)
+[[env.development.d1_databases]]
+binding = "DB"
+database_name = "tamyla-auth-db-local"
+database_id = "12ef163d-3b44-4b8b-83f0-09b51ef288ab"
+migrations_dir = "./migrations"
+
+# Development environment variables (same as default)
+[env.development.vars]
+NODE_ENV = "development"
+AUTH_JWT_SECRET = "d49f3be21dc5ebb3e95e4dfee78f524f8899313ccde1ce362c5df2d33429ad61"
+BASE_URL = "http://localhost:3002"
+FRONTEND_URL = "http://localhost:3000"
+MAGIC_LINK_EXPIRY_MINUTES = "15"
+RATE_LIMIT_WINDOW_MS = "900000"
+RATE_LIMIT_MAX = "100"
+
+# Staging environment
+[env.staging]
+name = "data-service-staging"
+main = "src/worker/index.js"
+workers_dev = true
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "tamyla-auth-db-staging"
+database_id = "b2d43c7a-dbb9-43b4-afe5-bd0d3c4cf618"
+migrations_dir = "./migrations"
+
+[env.staging.vars]
+NODE_ENV = "staging"
+# AUTH_JWT_SECRET is set as a Cloudflare Workers secret using: npx wrangler secret put AUTH_JWT_SECRET --env staging
+BASE_URL = "https://data-service-staging.tamylatrading.workers.dev"
+FRONTEND_URL = "https://tamyla.com"
+MAGIC_LINK_EXPIRY_MINUTES = "15"
+RATE_LIMIT_WINDOW_MS = "900000"
+RATE_LIMIT_MAX = "100"
+
+# Production environment
+[env.production]
+name = "data-service"
+main = "src/worker/index.js"
+workers_dev = true
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "tamyla-auth-db"
+database_id = "373a1466-3086-4132-a4f6-a7b1a64a3a41"
+migrations_dir = "./migrations"
+
+[env.production.vars]
+NODE_ENV = "production"
+# AUTH_JWT_SECRET is set as a Cloudflare Workers secret using: npx wrangler secret put AUTH_JWT_SECRET --env production
+BASE_URL = "https://data-service.tamylatrading.workers.dev"
+FRONTEND_URL = "https://tamyla.com"
+MAGIC_LINK_EXPIRY_MINUTES = "15"
+RATE_LIMIT_WINDOW_MS = "900000"
+RATE_LIMIT_MAX = "100"
+
+# Staging environment
+[env.staging]
+name = "data-service-staging"
+main = "src/worker/index.js"
+workers_dev = true
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "tamyla-auth-db-staging"
+database_id = "b2d43c7a-dbb9-43b4-afe5-bd0d3c4cf618"
+migrations_dir = "./migrations"
+
+[env.staging.vars]
+NODE_ENV = "staging"
+# AUTH_JWT_SECRET is set as a Cloudflare Workers secret using: npx wrangler secret put AUTH_JWT_SECRET --env staging
+BASE_URL = "https://data-service-staging.tamylatrading.workers.dev"
+FRONTEND_URL = "https://tamyla.com"
+MAGIC_LINK_EXPIRY_MINUTES = "15"
+RATE_LIMIT_WINDOW_MS = "900000"
+RATE_LIMIT_MAX = "100"

@@ -3,23 +3,36 @@
 
 const REQUIRED_FIELDS = [
   'id', 'original_filename', 'file_size', 'mime_type', 'created_at',
-  'owner_id', 'storage_path', 'is_public', 'category', 'checksum'
+  'owner_id', 'storage_path', 'is_public', 'checksum'
+];
+
+const OPTIONAL_FIELDS = [
+  'category' // Will be auto-generated if not provided
 ];
 
 export function validateFilePayload(data) {
   const errors = [];
+  
+  // Check required fields
   for (const field of REQUIRED_FIELDS) {
     if (data[field] === undefined || data[field] === null || data[field] === '') {
       errors.push(`Missing or empty required field: ${field}`);
     }
   }
+  
+  // Set default for optional fields
+  if (!data.category || data.category === null || data.category === '') {
+    data.category = 'uncategorized'; // Default value for AI processing
+  }
+  
+  // Type validations
   if (typeof data.file_size !== 'number' || data.file_size < 0) {
     errors.push('file_size must be a non-negative number');
   }
   if (!(typeof data.is_public === 'boolean' || data.is_public === 0 || data.is_public === 1)) {
     errors.push('is_public must be a boolean or 0/1 integer');
   }
-  // Add more type checks as needed
+  
   return {
     valid: errors.length === 0,
     errors
