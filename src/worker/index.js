@@ -158,7 +158,35 @@ export default {
         return handleAuth(request, d1Client, workerEnv);
       }
       
-      // Files endpoints
+      // Files endpoints - require authentication
+      if (pathname.startsWith('/files')) {
+        // Check for authentication on all /files endpoints
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+          return new Response(
+            JSON.stringify({ error: 'Missing or invalid authorization header' }),
+            { status: 401, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Verify JWT token
+        const token = authHeader.substring(7); // Remove "Bearer " prefix
+        try {
+          const { verifyToken } = await import('./utils/token.js');
+          const payload = await verifyToken(token, env.AUTH_JWT_SECRET);
+          console.log(`[Auth] Verified user: ${payload.user?.id || payload.sub || 'unknown'}`);
+          
+          // Add user info to request for handlers to use
+          request.authUser = payload.user || { id: payload.sub };
+        } catch (authError) {
+          console.error('[Auth] Token verification failed:', authError.message);
+          return new Response(
+            JSON.stringify({ error: 'Invalid or expired token' }),
+            { status: 401, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
       if (pathname === '/files' && request.method === 'GET') {
         // List files
         const files = await fileHandlers.listFiles(request, d1Client);
