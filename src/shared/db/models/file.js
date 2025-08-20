@@ -96,6 +96,110 @@ export class FileModel extends BaseD1Client {
     await this.db.prepare('DELETE FROM files WHERE id = ?').bind(id).run();
     return { id };
   }
+
+  /**
+   * Update processing status for a file
+   */
+  async updateProcessingStatus(id, status, metadata = {}) {
+    const updates = {
+      processing_status: status,
+      ...metadata
+    };
+    
+    if (status === 'processing') {
+      updates.processing_started_at = new Date().toISOString();
+    } else if (status === 'completed' || status === 'failed') {
+      updates.processing_completed_at = new Date().toISOString();
+    }
+    
+    return this.update(id, updates);
+  }
+
+  /**
+   * Get files by processing status
+   */
+  async getByProcessingStatus(status) {
+    const rows = await this.db.prepare(
+      'SELECT * FROM files WHERE processing_status = ? ORDER BY created_at DESC'
+    ).bind(status).all();
+    return rows.results.map(r => this.sanitize(fromRow(r)));
+  }
+
+  /**
+   * Get pending files that need processing
+   */
+  async getPendingFiles() {
+    return this.getByProcessingStatus('pending');
+  }
+
+  /**
+   * Get processing statistics
+   */
+  async getProcessingStats() {
+    const rows = await this.db.prepare(`
+      SELECT processing_status, COUNT(*) as count 
+      FROM files 
+      WHERE processing_status IS NOT NULL 
+      GROUP BY processing_status
+    `).all();
+    
+    const stats = {};
+    rows.results.forEach(row => {
+      stats[row.processing_status] = row.count;
+    });
+    
+    return stats;
+  }
+
+  /**
+   * Mark file for skimmer processing
+   */
+  async markForSkimming(id, jobId) {
+    return this.update(id, {
+      processing_status: 'processing',
+      skimmer_job_id: jobId,
+      processing_started_at: new Date().toISOString()
+    });
+  }
+
+  /**
+   * Get files with analysis results
+   */
+  async getAnalyzedFiles(limit = 50) {
+    const rows = await this.db.prepare(`
+      SELECT * FROM files 
+      WHERE processing_status = 'completed' AND analysis_result IS NOT NULL 
+      ORDER BY processing_completed_at DESC 
+      LIMIT ?
+    `).bind(limit).all();
+    
+    return rows.results.map(r => {
+      const file = this.sanitize(fromRow(r));
+      // Parse analysis_result JSON if it exists
+      if (file.analysis_result) {
+        try {
+          file.analysis_data = JSON.parse(file.analysis_result);
+        } catch (e) {
+          console.warn(`Failed to parse analysis_result for file ${file.id}`);
+        }
+      }
+      return file;
+    });
+  }
+
+  /**
+   * Get files that failed processing
+   */
+  async getFailedFiles(limit = 50) {
+    const rows = await this.db.prepare(`
+      SELECT * FROM files 
+      WHERE processing_status = 'failed' 
+      ORDER BY processing_completed_at DESC 
+      LIMIT ?
+    `).bind(limit).all();
+    
+    return rows.results.map(r => this.sanitize(fromRow(r)));
+  }
 }
 // File Metadata Model
 // Represents a file and its metadata in the database.
@@ -112,7 +216,17 @@ export class File {
     category = null,
     checksum = null,
     last_accessed_at = null,
-    download_count = 0
+    download_count = 0,
+    processing_status = 'pending',
+    processing_started_at = null,
+    processing_completed_at = null,
+    analysis_result = null,
+    analysis_summary = null,
+    content_type_detected = null,
+    extraction_status = null,
+    skimmer_job_id = null,
+    callback_attempts = 0,
+    last_callback_at = null
   }) {
     this.id = id;
     this.original_filename = original_filename;
@@ -126,6 +240,16 @@ export class File {
     this.checksum = checksum;
     this.last_accessed_at = last_accessed_at;
     this.download_count = download_count;
+    this.processing_status = processing_status;
+    this.processing_started_at = processing_started_at;
+    this.processing_completed_at = processing_completed_at;
+    this.analysis_result = analysis_result;
+    this.analysis_summary = analysis_summary;
+    this.content_type_detected = content_type_detected;
+    this.extraction_status = extraction_status;
+    this.skimmer_job_id = skimmer_job_id;
+    this.callback_attempts = callback_attempts;
+    this.last_callback_at = last_callback_at;
   }
 }
 
@@ -144,6 +268,16 @@ export function fromRow(row) {
     category: row.category,
     checksum: row.checksum,
     last_accessed_at: row.last_accessed_at,
-    download_count: row.download_count
+    download_count: row.download_count,
+    processing_status: row.processing_status || 'pending',
+    processing_started_at: row.processing_started_at,
+    processing_completed_at: row.processing_completed_at,
+    analysis_result: row.analysis_result,
+    analysis_summary: row.analysis_summary,
+    content_type_detected: row.content_type_detected,
+    extraction_status: row.extraction_status,
+    skimmer_job_id: row.skimmer_job_id,
+    callback_attempts: row.callback_attempts || 0,
+    last_callback_at: row.last_callback_at
   });
 }

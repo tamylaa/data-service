@@ -1,22 +1,14 @@
 -- Add profile fields to users table
 -- Migration: 0002_add_profile_fields
 
--- Add phone, company, and position columns to users table if they don't exist
--- Using IF NOT EXISTS pattern for SQLite
--- Note: SQLite doesn't support IF NOT EXISTS for ALTER TABLE, so we use a workaround
+-- Add phone, company, and position columns to users table
+-- Note: In D1, we cannot use transactions, so we add columns directly
+-- If columns already exist, the migration will fail but can be safely ignored
 
--- Check if phone column exists, if not add it
--- This will fail silently if column already exists
-BEGIN;
+-- Add profile fields
 ALTER TABLE users ADD COLUMN phone TEXT;
-ROLLBACK;
-
-BEGIN;
 ALTER TABLE users ADD COLUMN company TEXT;
-ROLLBACK;
-
-BEGIN;
 ALTER TABLE users ADD COLUMN position TEXT;
-ROLLBACK;
 
+-- Create index for phone lookups
 CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);

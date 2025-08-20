@@ -218,6 +218,39 @@ export default {
         return new Response(JSON.stringify({ id }), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
 
+      // Webhook endpoints - for receiving callbacks from other services
+      if (pathname.startsWith('/webhook/')) {
+        const { handleSkimmerWebhook, validateWebhookAuth, handleWebhookHealth, getWebhookActivity } = await import('./handlers/webhook.js');
+        
+        // Webhook health check
+        if (pathname === '/webhook/health' && request.method === 'GET') {
+          return handleWebhookHealth(request);
+        }
+        
+        // Webhook activity log (for debugging)
+        if (pathname === '/webhook/activity' && request.method === 'GET') {
+          return getWebhookActivity(request, d1Client);
+        }
+        
+        // Content-skimmer completion webhook
+        if (pathname === '/webhook/skimmer-complete' && request.method === 'POST') {
+          // Optional: Validate webhook authentication
+          // if (!validateWebhookAuth(request, env)) {
+          //   return new Response(
+          //     JSON.stringify({ success: false, error: 'Unauthorized webhook request' }),
+          //     { status: 401, headers: { 'Content-Type': 'application/json' } }
+          //   );
+          // }
+          
+          return handleSkimmerWebhook(request, d1Client);
+        }
+        
+        return new Response(
+          JSON.stringify({ success: false, error: 'Webhook endpoint not found' }),
+          { status: 404, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       // Users endpoints - handle both /api/users and /users
       if (pathname.startsWith('/users')) {
         return handleUsers(request, d1Client, env);
