@@ -251,6 +251,12 @@ export default {
         );
       }
 
+      // Search endpoints (query learning)
+      if (pathname.startsWith('/search/')) {
+        const { handleSearch } = await import('./handlers/search.js');
+        return handleSearch(request, env);
+      }
+
       // Users endpoints - handle both /api/users and /users
       if (pathname.startsWith('/users')) {
         return handleUsers(request, d1Client, env);
