@@ -187,35 +187,66 @@ export default {
         }
       }
 
+      // Files API endpoints - aligned with standard patterns
       if (pathname === '/files' && request.method === 'GET') {
-        // List files
+        // List files for authenticated user with enhanced pagination and filtering
         const files = await fileHandlers.listFiles(request, d1Client);
-        return new Response(JSON.stringify(files), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ success: true, data: files }), { 
+          status: 200, 
+          headers: { 'Content-Type': 'application/json' } 
+        });
       }
+      
+      if (pathname === '/files/stats' && request.method === 'GET') {
+        // Get file statistics for authenticated user
+        const stats = await fileHandlers.getFileStats(request, d1Client);
+        return new Response(JSON.stringify({ success: true, data: stats }), { 
+          status: 200, 
+          headers: { 'Content-Type': 'application/json' } 
+        });
+      }
+      
       if (pathname === '/files' && request.method === 'POST') {
-        // Use modular handler for POST /files
+        // Create file metadata
         const { handleFilesPost } = await import('./handlers/files-post.js');
         return handleFilesPost(request, d1Client);
       }
+      
       if (pathname.startsWith('/files/') && request.method === 'GET') {
         // Get file metadata by ID
         const id = pathname.split('/')[2];
         const file = await fileHandlers.getFileById(id, d1Client);
-        if (!file) return new Response('Not Found', { status: 404 });
-        return new Response(JSON.stringify(file), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        if (!file) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'File not found' }),
+            { status: 404, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response(JSON.stringify({ success: true, data: file }), { 
+          status: 200, 
+          headers: { 'Content-Type': 'application/json' } 
+        });
       }
+      
       if (pathname.startsWith('/files/') && request.method === 'PATCH') {
         // Update file metadata
         const id = pathname.split('/')[2];
         const updates = await request.json();
         const file = await fileHandlers.updateFileMetadata(id, updates, d1Client);
-        return new Response(JSON.stringify(file), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ success: true, data: file }), { 
+          status: 200, 
+          headers: { 'Content-Type': 'application/json' } 
+        });
       }
+      
       if (pathname.startsWith('/files/') && request.method === 'DELETE') {
         // Delete file metadata
         const id = pathname.split('/')[2];
         await fileHandlers.deleteFileMetadata(id, d1Client);
-        return new Response(JSON.stringify({ id }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ success: true, data: { id } }), { 
+          status: 200, 
+          headers: { 'Content-Type': 'application/json' } 
+        });
       }
 
       // Webhook endpoints - for receiving callbacks from other services
