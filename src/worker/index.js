@@ -229,6 +229,38 @@ export default {
         });
       }
 
+      // Logs API endpoints - for logger-service integration (use X-Service-Key auth)
+      if (pathname.startsWith('/api/logs')) {
+        // Import log handlers
+        const { handleLogStore, handleLogQuery, handleLogAnalytics } = await import('./handlers/logs.js');
+        
+        // Skip user auth for service-to-service calls - use X-Service-Key instead
+        const serviceKey = request.headers.get('X-Service-Key');
+        if (!serviceKey || serviceKey !== env.X_SERVICE_KEY) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Invalid service key' }),
+            { status: 401, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        if (pathname === '/api/logs/store' && request.method === 'POST') {
+          return handleLogStore(request, d1Client);
+        }
+        
+        if (pathname === '/api/logs' && request.method === 'GET') {
+          return handleLogQuery(request, d1Client);
+        }
+        
+        if (pathname === '/api/logs/analytics' && request.method === 'GET') {
+          return handleLogAnalytics(request, d1Client);
+        }
+        
+        return new Response(
+          JSON.stringify({ success: false, error: 'Log endpoint not found' }),
+          { status: 404, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       // Webhook endpoints - for receiving callbacks from other services
       if (pathname.startsWith('/webhook/')) {
         const { handleSkimmerWebhook, validateWebhookAuth, handleWebhookHealth, getWebhookActivity } = await import('./handlers/webhook.js');
