@@ -82,6 +82,9 @@ export default {
       // Route the request to the appropriate handler
       const url = new URL(request.url);
       console.log(`[${new Date().toISOString()}] Received request: ${request.method} ${url.pathname}`);
+
+      // Import reusable authentication middleware
+      const { authenticateRequest, requireAuth } = await import('../middleware/auth.js');
       
       // Health check endpoint
       if (url.pathname === '/health' && request.method === 'GET') {
@@ -158,33 +161,10 @@ export default {
         return handleAuth(request, d1Client, workerEnv);
       }
       
-      // Files endpoints - require authentication
-      if (pathname.startsWith('/files')) {
-        // Check for authentication on all /files endpoints
-        const authHeader = request.headers.get('Authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-          return new Response(
-            JSON.stringify({ error: 'Missing or invalid authorization header' }),
-            { status: 401, headers: { 'Content-Type': 'application/json' } }
-          );
-        }
-
-        // Verify JWT token
-        const token = authHeader.substring(7); // Remove "Bearer " prefix
-        try {
-          const { verifyToken } = await import('./utils/token.js');
-          const payload = await verifyToken(token, env.AUTH_JWT_SECRET);
-          console.log(`[Auth] Verified user: ${payload.user?.id || payload.sub || 'unknown'}`);
-          
-          // Add user info to request for handlers to use
-          request.authUser = payload.user || { id: payload.sub };
-        } catch (authError) {
-          console.error('[Auth] Token verification failed:', authError.message);
-          return new Response(
-            JSON.stringify({ error: 'Invalid or expired token' }),
-            { status: 401, headers: { 'Content-Type': 'application/json' } }
-          );
-        }
+      // SECURITY: Apply authentication middleware to all endpoints
+      const authResponse = await requireAuth(request, env);
+      if (authResponse) {
+        return authResponse; // Authentication failed, return error response
       }
 
       // Files API endpoints - aligned with standard patterns
@@ -265,13 +245,16 @@ export default {
         
         // Content-skimmer completion webhook
         if (pathname === '/webhook/skimmer-complete' && request.method === 'POST') {
-          // Optional: Validate webhook authentication
-          // if (!validateWebhookAuth(request, env)) {
-          //   return new Response(
-          //     JSON.stringify({ success: false, error: 'Unauthorized webhook request' }),
-          //     { status: 401, headers: { 'Content-Type': 'application/json' } }
-          //   );
-          // }
+          // Validate webhook authentication (can be disabled with SKIP_WEBHOOK_AUTH=true)
+          if (!env.SKIP_WEBHOOK_AUTH) {
+            const authResult = await authenticateRequest(request, env, pathname, { 
+              authType: 'webhook',
+              customErrorMessage: 'Unauthorized webhook request'
+            });
+            if (!authResult.success) {
+              return authResult.response;
+            }
+          }
           
           return handleSkimmerWebhook(request, d1Client);
         }

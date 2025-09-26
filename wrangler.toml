@@ -27,6 +27,12 @@ RATE_LIMIT_WINDOW_MS = "900000"
 RATE_LIMIT_MAX = "100"
 MAX_FILE_SIZE = "26214400"
 ALLOWED_FILE_TYPES = "image/jpeg,image/png,image/webp,image/gif,application/pdf,video/mp4,video/webm,audio/mpeg,audio/wav"
+# Security settings
+SKIP_WEBHOOK_AUTH = "true"  # Set to false in production
+# Service API keys for inter-service communication
+CONTENT_SKIMMER_API_KEY = "content-skimmer-dev-key"
+LOGGER_SERVICE_API_KEY = "logger-service-dev-key" 
+AUTH_SERVICE_API_KEY = "auth-service-dev-key"
 
 # Development server configuration
 [dev]
